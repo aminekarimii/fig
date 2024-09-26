@@ -8,12 +8,11 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import kotlin.jvm.Throws
 
-class FigException (message: String) : Exception(message)
+class FigException(message: String) : Exception(message)
 
-class Fig  {
-    companion object{
+class Fig {
+    companion object {
         private const val KEY_MISSING_ERROR = "Required value 'key' missing at \$[1]"
     }
 
@@ -35,9 +34,9 @@ class Fig  {
         val moshi = Moshi.Builder()
             .build()
 
-        val url = if(sheetUrl.endsWith("edit?usp=sharing")){
+        val url = if (sheetUrl.endsWith("edit?usp=sharing")) {
             sheetUrl.replace("edit?usp=sharing", "")
-        }else{
+        } else {
             sheetUrl
         }
 
@@ -52,10 +51,10 @@ class Fig  {
 
         try {
             inMemCache = figApi.getKeyValues().associate { it.key to it.value }
-        }catch (e: JsonDataException){
-            if(e.message == KEY_MISSING_ERROR){
+        } catch (e: JsonDataException) {
+            if (e.message == KEY_MISSING_ERROR) {
                 throw FigException("You can't use both string and int. Use `=TO_TEXT()` to convert to string")
-            }else{
+            } else {
                 throw FigException(e.message ?: "Unknown error")
             }
         }
@@ -63,10 +62,19 @@ class Fig  {
 
     fun getValue(key: String, defaultValue: String?): String? {
         return inMemCache.let { keyValues ->
-            if(keyValues == null) {
+            if (keyValues == null) {
                 println("WARNING: Fig.init not called, failed or not completed yet")
             }
             keyValues?.get(key) ?: defaultValue
+        }
+    }
+
+    fun getValues(): Map<String, String?> {
+        return inMemCache.let { keyValues ->
+            if (keyValues == null) {
+                println("WARNING: Fig.init not called, failed or not completed yet")
+            }
+            keyValues ?: emptyMap()
         }
     }
 }
